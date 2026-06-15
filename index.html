@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>myShop 精品店</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1a2e; --mid: #4a4a6a; --soft: #8888aa; --line: #e4e4f0;
+    --bg: #f7f7fb; --white: #ffffff; --accent: #ff6b35; --wa: #25d366;
+  }
+  body { font-family: 'Noto Sans HK', sans-serif; background: var(--bg); color: var(--ink); padding-bottom: 90px; }
+
+  /* NAV */
+  .nav { background: var(--white); border-bottom: 1px solid var(--line); padding: 0 20px; height: 58px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-weight: 700; font-size: 20px; letter-spacing: -0.5px; }
+  .nav-logo span { color: var(--accent); }
+  .lang-toggle { display:flex; border:1.5px solid var(--line); border-radius:20px; overflow:hidden; }
+  .lang-toggle button { background:white; border:none; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; color:var(--soft); font-family:inherit; transition:all .2s; }
+  .lang-toggle button.active { background:var(--accent); color:white; }
+
+  /* HERO */
+  .hero { background: linear-gradient(135deg, var(--ink) 0%, #2d2d5e 100%); color: white; padding: 44px 20px 36px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content:''; position:absolute; top:-50px; right:-50px; width:180px; height:180px; border-radius:50%; background:rgba(255,107,53,.15); }
+  .hero h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; position: relative; }
+  .hero p { color: rgba(255,255,255,.6); font-size: 13px; margin-top: 6px; position: relative; }
+  .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); margin-right:5px; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* FILTERS */
+  .filters { padding: 14px 16px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .chip { padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--line); background: white; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; color: var(--mid); transition: all .2s; font-family: inherit; }
+  .chip.active { border-color: var(--accent); color: var(--accent); background: rgba(255,107,53,.06); }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 4px 14px 40px; }
+  @media(min-width:560px){ .grid { grid-template-columns: repeat(3,1fr); } }
+  @media(min-width:800px){ .grid { grid-template-columns: repeat(4,1fr); } }
+
+  .card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); transition: transform .2s, box-shadow .2s; cursor: pointer; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+  .card-img { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#f0f0f8; }
+  .card-img.placeholder { display:flex; align-items:center; justify-content:center; font-size:44px; }
+  .card-body { padding: 11px 12px 13px; }
+  .card-name { font-size: 13px; font-weight: 600; line-height: 1.4; }
+  .card-desc { font-size: 11px; color: var(--soft); margin-top: 3px; line-height: 1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-price { font-size: 17px; font-weight: 700; color: var(--accent); margin-top: 8px; }
+  .wa-btn { display:flex; align-items:center; justify-content:center; gap:5px; width:100%; margin-top:9px; padding:9px; background:var(--wa); color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; text-decoration:none; transition:opacity .2s; }
+  .wa-btn:hover { opacity:.85; }
+
+  /* SELECT CHECKBOX on card */
+  .card { position: relative; }
+  .card-select { position:absolute; top:8px; left:8px; z-index:5; display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.92); border:1.5px solid var(--line); border-radius:20px; padding:4px 10px 4px 7px; font-size:11px; font-weight:600; color:var(--mid); cursor:pointer; backdrop-filter:blur(4px); transition:all .15s; }
+  .card-select input { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; margin:0; }
+  .card-select.checked { border-color:var(--accent); color:var(--accent); background:rgba(255,107,53,.12); }
+  .card.selected { box-shadow:0 0 0 2px var(--accent), 0 8px 24px rgba(0,0,0,.1); }
+
+  /* CART BAR (sticky bottom) */
+  .cart-bar { position:fixed; left:0; right:0; bottom:0; z-index:150; transform:translateY(120%); transition:transform .28s cubic-bezier(.2,.8,.2,1); padding:0 14px calc(14px + env(safe-area-inset-bottom)); }
+  .cart-bar.show { transform:translateY(0); }
+  .cart-bar-inner { max-width:600px; margin:0 auto; background:var(--ink); color:white; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.28); display:flex; align-items:center; gap:12px; padding:12px 14px; }
+  .cart-bar-info { flex:1; min-width:0; cursor:pointer; }
+  .cart-bar-count { font-size:13px; font-weight:600; }
+  .cart-bar-total { font-size:12px; color:rgba(255,255,255,.6); margin-top:1px; }
+  .cart-bar-send { display:flex; align-items:center; justify-content:center; gap:7px; background:var(--wa); color:white; border:none; border-radius:10px; padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .cart-bar-send:hover { opacity:.9; }
+
+  /* CART MODAL */
+  .cart-item { display:flex; align-items:center; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .cart-item:last-child { border-bottom:none; }
+  .cart-item-img { width:48px; height:48px; border-radius:8px; object-fit:cover; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .cart-item-info { flex:1; min-width:0; }
+  .cart-item-name { font-size:13px; font-weight:600; line-height:1.3; }
+  .cart-item-price { font-size:13px; font-weight:700; color:var(--accent); margin-top:2px; }
+  .cart-item-remove { background:rgba(229,62,62,.08); color:#e53e3e; border:none; width:28px; height:28px; border-radius:7px; font-size:13px; cursor:pointer; flex-shrink:0; }
+  .cart-total-row { display:flex; justify-content:space-between; align-items:center; margin:16px 0 6px; font-size:15px; font-weight:700; }
+  .cart-total-row .amt { color:var(--accent); font-size:20px; }
+  .cart-actions { display:flex; gap:10px; margin-top:14px; }
+  .cart-clear-btn { background:var(--bg); color:var(--mid); border:1.5px solid var(--line); border-radius:12px; padding:13px 16px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .cart-send-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--wa); color:white; border:none; border-radius:12px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .cart-empty { text-align:center; padding:30px 10px; color:var(--soft); font-size:13px; line-height:1.7; }
+
+  /* MODAL */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200; align-items:flex-end; justify-content:center; }
+  .overlay.open { display:flex; animation: fadeIn .2s; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @media(min-width:600px){ .overlay { align-items:center; } }
+  .modal { background:white; border-radius:20px 20px 0 0; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; padding:22px; }
+  @media(min-width:600px){ .modal { border-radius:20px; } }
+  .modal-close { float:right; background:var(--bg); border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:16px; line-height:30px; text-align:center; }
+  .modal-img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; display:block; background:#f0f0f8; margin:12px 0 14px; }
+  .modal-img.placeholder { display:flex; align-items:center; justify-content:center; font-size:70px; }
+  .modal-name { font-size:19px; font-weight:700; }
+  .modal-price { font-size:24px; font-weight:700; color:var(--accent); margin:6px 0 10px; }
+  .modal-desc { font-size:14px; color:var(--mid); line-height:1.75; }
+  .modal-wa { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:18px; padding:14px; background:var(--wa); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; }
+
+  /* LOADING / EMPTY */
+  .loading { text-align:center; padding:60px 20px; color:var(--soft); font-size:14px; }
+  .spinner { width:32px; height:32px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .empty { text-align:center; padding:60px 20px; color:var(--soft); }
+  .empty .icon { font-size:48px; margin-bottom:12px; }
+  .site-footer { text-align:center; padding:28px 20px 40px; color:var(--soft); font-size:12px; line-height:1.6; border-top:1px solid var(--line); margin-top:8px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">my<span>Shop</span></div>
+  <div class="lang-toggle">
+    <button id="lang-zh" onclick="switchLang('zh-HK')">繁中</button>
+    <button id="lang-en" onclick="switchLang('en')">EN</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1 id="hero-title">myShop 精品店</h1>
+  <p><span class="live-dot"></span><span id="hero-tagline"></span></p>
+</div>
+
+<div class="filters" id="filters">
+  <button class="chip active" data-cat="全部">全部</button>
+</div>
+
+<div class="grid" id="grid">
+  <div class="loading" style="grid-column:1/-1">
+    <div class="spinner"></div><span id="loading-text"></span>
+  </div>
+</div>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    <div id="m-img" class="modal-img placeholder"></div>
+    <div id="m-name" class="modal-name"></div>
+    <div id="m-price" class="modal-price"></div>
+    <div id="m-desc" class="modal-desc"></div>
+    <a id="m-wa" class="modal-wa" href="#" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="m-wa-label"></span>
+    </a>
+  </div>
+</div>
+
+<!-- Cart bar (sticky bottom) -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-bar-inner">
+    <div class="cart-bar-info" onclick="openCart()">
+      <div class="cart-bar-count" id="cart-bar-count"></div>
+      <div class="cart-bar-total" id="cart-bar-total"></div>
+    </div>
+    <button class="cart-bar-send" onclick="sendCart()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="cart-bar-send-label"></span>
+    </button>
+  </div>
+</div>
+
+<!-- Cart modal -->
+<div class="overlay" id="cart-overlay" onclick="closeCart(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCartBtn()">✕</button>
+    <div class="modal-name" id="cart-title" style="margin-bottom:14px"></div>
+    <div id="cart-body"></div>
+    <div id="cart-foot">
+      <div class="cart-total-row">
+        <span id="cart-total-label"></span>
+        <span class="amt" id="cart-total-val"></span>
+      </div>
+      <div class="cart-actions">
+        <button class="cart-clear-btn" id="cart-clear" onclick="clearCart()"></button>
+        <a class="cart-send-btn" id="cart-send" href="#" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span id="cart-send-label"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/sheets.js"></script>
+<script>
+let allProducts = [];
+let activeCategory = '__ALL__';
+let siteSettings = {};
+let managedCategories = [];
+let cart = [];
+
+// ── 查詢清單（多選一次過 WhatsApp） ──────────────
+const MYSHOP_CART_KEY = 'myshop-cart';
+
+function loadCart() {
+  try { cart = JSON.parse(localStorage.getItem(MYSHOP_CART_KEY) || '[]'); }
+  catch { cart = []; }
+  if (!Array.isArray(cart)) cart = [];
+}
+function saveCart() {
+  try { localStorage.setItem(MYSHOP_CART_KEY, JSON.stringify(cart)); } catch {}
+}
+function isInCart(id) { return cart.includes(id); }
+
+function toggleCart(id) {
+  if (isInCart(id)) cart = cart.filter(x => x !== id);
+  else cart.push(id);
+  saveCart();
+  renderGrid(currentList());
+  updateCartBar();
+  if (document.getElementById('cart-overlay').classList.contains('open')) renderCart();
+}
+
+function cartProducts() {
+  return cart.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
+}
+function cartTotal() {
+  return cartProducts().reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
+}
+
+function updateCartBar() {
+  const items = cartProducts();
+  const bar = document.getElementById('cart-bar');
+  if (!items.length) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  document.getElementById('cart-bar-count').textContent = tMyShop('customerCartCount', { n: items.length });
+  document.getElementById('cart-bar-total').textContent = `HK$${cartTotal()}`;
+}
+
+function openCart() {
+  renderCart();
+  document.getElementById('cart-overlay').classList.add('open');
+}
+function closeCart(e) { if (!e || e.target.id === 'cart-overlay') document.getElementById('cart-overlay').classList.remove('open'); }
+function closeCartBtn() { document.getElementById('cart-overlay').classList.remove('open'); }
+
+function clearCart() {
+  cart = [];
+  saveCart();
+  renderGrid(currentList());
+  updateCartBar();
+  renderCart();
+}
+
+function renderCart() {
+  const items = cartProducts();
+  document.getElementById('cart-title').textContent = tMyShop('customerCartTitle');
+  document.getElementById('cart-clear').textContent = tMyShop('customerCartClear');
+  document.getElementById('cart-send-label').textContent = tMyShop('customerCartSend');
+  const body = document.getElementById('cart-body');
+  if (!items.length) {
+    body.innerHTML = `<div class="cart-empty">${tMyShop('customerCartEmpty')}</div>`;
+    document.getElementById('cart-foot').style.display = 'none';
+    return;
+  }
+  document.getElementById('cart-foot').style.display = 'block';
+  body.innerHTML = items.map(p => `
+    <div class="cart-item">
+      ${p.imageUrl
+        ? `<img class="cart-item-img" src="${p.imageUrl}" alt="${p.name}" onerror="this.outerHTML='<div class=\\\\'cart-item-img placeholder\\\\'>🛍️</div>'">`
+        : `<div class="cart-item-img placeholder">🛍️</div>`}
+      <div class="cart-item-info">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-price">HK$${p.price}</div>
+      </div>
+      <button class="cart-item-x" onclick="toggleCart('${p.id}')" aria-label="${tMyShop('customerCartRemove')}">✕</button>
+    </div>
+  `).join('');
+  document.getElementById('cart-total-label').textContent = tMyShop('customerCartTotal');
+  document.getElementById('cart-total-val').textContent = `HK$${cartTotal()}`;
+  document.getElementById('cart-send').href = cartWaLink();
+}
+
+function cartWaLink() {
+  const items = cartProducts();
+  const lines = items.map((p, i) => `${i + 1}. ${p.name}（HK$${p.price}）`);
+  const msg = `${tMyShop('customerMultiInquiryPrefix')}\n${lines.join('\n')}\n${tMyShop('customerMultiInquiryTotal')} HK$${cartTotal()}`;
+  return `https://wa.me/${getEffectiveWhatsApp()}?text=${encodeURIComponent(msg)}`;
+}
+
+function sendCart() {
+  if (!cartProducts().length) return;
+  window.open(cartWaLink(), '_blank');
+}
+
+async function init() {
+  // 初始化語言
+  let lang = getMyShopLang();
+  if (!localStorage.getItem(MYSHOP_LANGUAGE_KEY) && CONFIG.DEFAULT_LANG) {
+    lang = CONFIG.DEFAULT_LANG;
+    setMyShopLang(lang);
+  }
+
+  // 載入網站文字 + 分類（由後台管理，存喺 Google Sheet）
+  try {
+    [siteSettings, managedCategories] = await Promise.all([fetchSiteSettings(), fetchCategories()]);
+  } catch { siteSettings = {}; managedCategories = []; }
+
+  applyStaticTexts();
+  updateLangButtons();
+
+  allProducts = await fetchProducts();
+  buildFilters();
+  renderGrid(currentList());
+  loadCart();
+  // 清走已經唔存在/落架嘅產品
+  cart = cart.filter(id => allProducts.some(p => p.id === id));
+  saveCart();
+  renderGrid(currentList());
+  updateCartBar();
+}
+
+function switchLang(lang) {
+  setMyShopLang(lang);
+  applyStaticTexts();
+  updateLangButtons();
+  buildFilters();
+  renderGrid(currentList());
+}
+
+function updateLangButtons() {
+  const lang = getMyShopLang();
+  document.getElementById('lang-zh').classList.toggle('active', lang === 'zh-HK');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+}
+
+function shopName() { return siteSettings.shopName || CONFIG.SHOP_NAME || 'myShop'; }
+function shopTagline() {
+  if (siteSettings.tagline) return siteSettings.tagline;
+  return (getMyShopLang() === 'en') ? tMyShop('customerHeroTagline') : (CONFIG.SHOP_TAGLINE || tMyShop('customerHeroTagline'));
+}
+
+function copyrightText() {
+  const raw = (siteSettings.copyright != null && siteSettings.copyright !== '') ? siteSettings.copyright : (CONFIG.COPYRIGHT || '');
+  return String(raw).replace(/\{\{\s*year\s*\}\}/gi, new Date().getFullYear());
+}
+
+function applyStaticTexts() {
+  document.getElementById('hero-title').textContent = shopName();
+  document.getElementById('hero-tagline').textContent = shopTagline();
+  document.getElementById('loading-text').textContent = tMyShop('customerLoading');
+  document.getElementById('m-wa-label').textContent = tMyShop('customerDetailAction');
+  document.getElementById('cart-bar-send-label').textContent = tMyShop('customerCartSend');
+  document.getElementById('site-footer').textContent = copyrightText();
+  document.title = shopName();
+  updateCartBar();
+}
+
+function currentList() {
+  return activeCategory === '__ALL__' ? allProducts : allProducts.filter(p => p.category === activeCategory);
+}
+
+function buildFilters() {
+  // 優先用後台管理嘅分類（只顯示開啟嘅）；冇就 fallback 用產品入面出現過嘅分類
+  let cats = managedCategories.filter(c => c.enabled).map(c => c.name);
+  if (!cats.length) cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  const bar = document.getElementById('filters');
+  const allLabel = tMyShop('customerAll');
+  bar.innerHTML =
+    `<button class="chip${activeCategory==='__ALL__'?' active':''}" onclick="filterBy('__ALL__')">${allLabel}</button>` +
+    cats.map(c =>
+      `<button class="chip${c===activeCategory?' active':''}" onclick="filterBy('${c.replace(/'/g,"\\'")}')">${c}</button>`
+    ).join('');
+}
+
+function filterBy(cat) {
+  activeCategory = cat;
+  buildFilters();
+  renderGrid(currentList());
+}
+
+function renderGrid(products) {
+  const grid = document.getElementById('grid');
+  if (!products.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">📦</div><p>${tMyShop('customerEmpty')}</p></div>`;
+    return;
+  }
+  const inquiryLabel = tMyShop('customerWhatsAppInquiry');
+  grid.innerHTML = products.map((p, i) => `
+    <div class="card${isInCart(p.id) ? ' selected' : ''}" onclick="openModal(${i})">
+      <button class="card-select" onclick="event.stopPropagation();toggleCart('${p.id}')" aria-label="${tMyShop('customerSelect')}">
+        <span class="card-check">${isInCart(p.id) ? '✓' : ''}</span>
+      </button>
+      ${p.imageUrl
+        ? `<img class="card-img" src="${p.imageUrl}" alt="${p.name}" loading="lazy" onerror="this.outerHTML='<div class=\\'card-img placeholder\\'>🛍️</div>'">`
+        : `<div class="card-img placeholder">🛍️</div>`}
+      <div class="card-body">
+        <div class="card-name">${p.name}</div>
+        <div class="card-desc">${p.description || ''}</div>
+        <div class="card-price">HK$${p.price}</div>
+        <button class="cart-toggle-btn${isInCart(p.id) ? ' in' : ''}" onclick="event.stopPropagation();toggleCart('${p.id}')">
+          ${isInCart(p.id) ? tMyShop('customerInCart') : tMyShop('customerAddToCart')}
+        </button>
+        <a class="wa-btn" href="${waLink(p)}" target="_blank" onclick="event.stopPropagation()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          ${inquiryLabel}
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function waLink(p) {
+  const msg = encodeURIComponent(`${tMyShop('customerInquiryPrefix')}${p.name}（HK$${p.price}）`);
+  return `https://wa.me/${getEffectiveWhatsApp()}?text=${msg}`;
+}
+
+function openModal(i) {
+  const p = currentList()[i];
+  document.getElementById('m-img').outerHTML = p.imageUrl
+    ? `<img id="m-img" class="modal-img" src="${p.imageUrl}" alt="${p.name}">`
+    : `<div id="m-img" class="modal-img placeholder">🛍️</div>`;
+  document.getElementById('m-name').textContent = p.name;
+  document.getElementById('m-price').textContent = `HK$${p.price}`;
+  document.getElementById('m-desc').textContent = p.description || '';
+  document.getElementById('m-wa').href = waLink(p);
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(e) { if(e.target.id==='overlay') closeModalBtn(); }
+function closeModalBtn() { document.getElementById('overlay').classList.remove('open'); }
+
+init();
+</script>
+</body>
+</html>

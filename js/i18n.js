@@ -1,0 +1,321 @@
+const MYSHOP_LANGUAGE_KEY = 'myshop-language';
+
+const MYSHOP_I18N = {
+  'zh-HK': {
+    switchToEnglish: 'EN',
+    switchToChinese: '繁中',
+
+    customerHeroTagline: 'WhatsApp 落單 · 香港本地直送',
+    customerAll: '全部',
+    customerLoading: '載入產品中...',
+    customerEmpty: '暫時未有產品',
+    customerWhatsAppOrder: 'WhatsApp 落單',
+    customerWhatsAppInquiry: 'WhatsApp 查詢',
+    customerInquiryPrefix: '你好，我想查詢：',
+    customerModalClose: '關閉',
+    customerDetailAction: 'WhatsApp 落單 / 查詢',
+    customerAddToCart: '＋ 加入查詢',
+    customerInCart: '✓ 已加入',
+    customerCartTitle: '查詢清單',
+    customerCartEmpty: '未揀產品。喺下面剔選你想查詢嘅產品，再一次過用 WhatsApp 發送。',
+    customerCartCount: '已揀 {{n}} 件',
+    customerCartTotal: '合計',
+    customerCartSend: 'WhatsApp 一次過查詢',
+    customerCartClear: '清空',
+    customerCartRemove: '移除',
+    customerCartBarLabel: '查詢清單',
+    customerSelect: '揀選',
+    customerSelected: '已揀',
+    customerMultiInquiryPrefix: '你好，我想查詢以下產品：',
+    customerMultiInquiryTotal: '合計約',
+
+    adminLoginTitle: '⚙️ Admin 後台',
+    adminLoginSubtitle: '請用 Google 帳戶登入，然後建立你自己的 Google Sheet 同 Drive 相片資料夾。',
+    adminLoginButton: '使用 Google 帳戶登入',
+    adminConnectedAs: '已登入：{{email}}',
+    adminLanguageSetupTitle: 'Google 帳戶設定',
+    adminLanguageSetupDesc: '登入後可以自動建立一個新的 Spreadsheet 同圖片資料夾，再下載更新版 `config.js` 去套用到網站。',
+    adminLanguageSetupAction: '一鍵建立我的 Sheet + Drive 資料夾',
+    adminLanguageSetupCopy: '複製設定片段',
+    adminLanguageSetupDownload: '下載 config.js',
+    adminLanguageSetupNote: '提示：這個靜態網站仍然需要把新 Sheet / Folder ID 貼回 `js/config.js`，公開網站先會跟住更新。',
+    adminStatsTotal: '產品總數',
+    adminStatsOn: '上架中',
+    adminStatsOff: '已下架',
+    adminProductsTitle: '產品管理',
+    adminAddProduct: '＋ 新增產品',
+    adminFormAddTitle: '新增產品',
+    adminFormEditTitle: '編輯產品',
+    adminFieldName: '產品名稱 *',
+    adminFieldPrice: '價錢 (HK$) *',
+    adminFieldCategory: '分類',
+    adminFieldStatus: '狀態',
+    adminFieldDescription: '產品描述',
+    adminFieldImage: '產品相片',
+    adminImageDropTitle: '點擊上傳相片',
+    adminImageDropSubtitle: '支援 JPG / PNG · 建議正方形 · 最大 10MB',
+    adminImageUrlPlaceholder: '或者直接貼上圖片 URL',
+    adminCancel: '取消',
+    adminSave: '儲存產品',
+    adminSaving: '儲存中...',
+    adminTableProduct: '產品',
+    adminTablePrice: '價錢',
+    adminTableStatus: '狀態',
+    adminTableActions: '操作',
+    adminTableLoading: '載入中...',
+    adminTableEmpty: '未有產品，請新增',
+    adminStatusOn: '● 上架',
+    adminStatusOff: '● 下架',
+    adminEdit: '編輯',
+    adminDelete: '刪除',
+    adminToastLoginFailed: '登入失敗',
+    adminToastCreating: '建立中...',
+    adminToastCreated: '已建立新 Google Sheet 同 Drive 資料夾',
+    adminToastCopySuccess: '已複製設定片段',
+    adminToastCopyFail: '複製失敗，請手動複製',
+    adminToastMissingFields: '請填寫產品名稱和價錢',
+    adminToastUploading: '上傳相片中...',
+    adminToastSaved: '儲存成功',
+    adminToastAddSuccess: '產品已新增 ✓',
+    adminToastUpdateSuccess: '產品已更新 ✓',
+    adminToastDeleteSuccess: '產品已刪除',
+    adminToastDeleteFail: '刪除失敗',
+    adminToastErrorPrefix: '發生錯誤：',
+    adminConfirmDelete: '確定刪除「{{name}}」？此操作不可還原。',
+    adminConfigSnippetTitle: '設定片段',
+    adminConfigSnippetHint: '把以下內容貼入 `js/config.js`，就可以切換到你自己的 Google 帳戶資源。',
+    adminShopNameLabel: '店名',
+    adminShopNamePlaceholder: '例如：myShop 精品店',
+    adminWhatsAppLabel: 'WhatsApp 號碼',
+    adminWhatsAppPlaceholder: '85298765432',
+    adminWhatsAppHint: '香港號碼格式：852 + 8 位數字（唔使加 + 或空格）。儲存後，前台每件產品嘅 WhatsApp 按鈕都會用呢個號碼。',
+    adminWhatsAppSave: '儲存 WhatsApp 號碼',
+    adminWhatsAppSaved: 'WhatsApp 號碼已儲存 ✓',
+    adminWhatsAppInvalid: '請輸入有效嘅 WhatsApp 號碼（只限數字）',
+    adminGenerateConfig: '生成 config.js',
+    adminCurrentAccountLabel: '目前登入',
+    adminSheetIdLabel: 'Google Sheet ID',
+    adminFolderIdLabel: 'Drive 資料夾 ID',
+    adminSetupNameHint: '會用嚟建立新 Sheet 同 Drive 資料夾名稱。',
+    adminSetupPublicNote: '公開前台仍然要把更新過的設定同步到 `js/config.js`。',
+
+    // 分類管理
+    adminCatTitle: '分類管理',
+    adminCatDesc: '喺度加 / 改 / 刪你嘅產品分類。前台篩選掣同新增產品時都會用呢個清單。',
+    adminCatNewPlaceholder: '輸入新分類名稱，例：手袋',
+    adminCatAdd: '＋ 加入分類',
+    adminCatEnabled: '顯示',
+    adminCatDisabled: '隱藏',
+    adminCatDelete: '刪除',
+    adminCatEmpty: '未有分類，喺上面加一個。',
+    adminCatSaved: '分類已儲存 ✓',
+    adminCatDup: '呢個分類已經存在',
+    adminCatSaveBtn: '儲存分類',
+    adminCatNone: '（未分類）',
+
+    // 網站文字
+    adminSiteTitle: '網站文字設定',
+    adminSiteDesc: '改前台顯示嘅文字。儲存後，所有訪客即時睇到（唔使重新上傳）。',
+    adminSiteShopName: '網店名稱',
+    adminSiteShopNamePh: '例：myShop 精品店',
+    adminSiteTagline: '副標題',
+    adminSiteTaglinePh: '例：WhatsApp 落單 · 香港本地直送',
+    adminSiteCopyright: '頁尾版權字句',
+    adminSiteCopyrightPh: '例：© {{year}} myShop。版權所有。',
+    adminSiteSave: '儲存網站文字',
+    adminSiteSaved: '網站文字已儲存 ✓',
+
+    // 安全
+    adminSecTitle: '🔒 後台保安',
+    adminSecDesc: '只有以下 Google 電郵先可以登入呢個後台。其他人即使知道網址、用自己 Google 登入，都會被拒絕，亦改唔到你嘅前台資料。',
+    adminSecListLabel: '允許登入嘅 Google 電郵（每行一個）',
+    adminSecSave: '儲存允許名單',
+    adminSecSaved: '允許名單已儲存 ✓',
+    adminSecEmpty: '名單唔可以空，最少要保留一個電郵。',
+    adminSecInvalid: '請輸入最少一個有效電郵地址。',
+    adminSecLockoutWarn: '注意：你而家登入嘅電郵唔喺名單內，儲存後你自己都會登唔到。確定繼續？',
+    adminAccessDeniedTitle: '⛔ 拒絕存取',
+    adminAccessDeniedDesc: '你嘅 Google 帳戶（{{email}}）唔喺允許名單內，唔可以進入後台。',
+    adminAccessDeniedBack: '用另一個帳戶登入',
+    adminSettingsSaveFail: '儲存失敗，請重試',
+  },
+  en: {
+    switchToEnglish: 'EN',
+    switchToChinese: '繁中',
+
+    customerHeroTagline: 'Order via WhatsApp · Local delivery in Hong Kong',
+    customerAll: 'All',
+    customerLoading: 'Loading products...',
+    customerEmpty: 'No products yet',
+    customerWhatsAppOrder: 'WhatsApp Order',
+    customerWhatsAppInquiry: 'WhatsApp Inquiry',
+    customerInquiryPrefix: 'Hi, I’d like to enquire about: ',
+    customerModalClose: 'Close',
+    customerDetailAction: 'WhatsApp Order / Inquiry',
+    customerAddToCart: '＋ Add to inquiry',
+    customerInCart: '✓ Added',
+    customerCartTitle: 'Inquiry list',
+    customerCartEmpty: 'No items yet. Tick the products you want below, then send them all at once via WhatsApp.',
+    customerCartCount: '{{n}} selected',
+    customerCartTotal: 'Total',
+    customerCartSend: 'Inquire all via WhatsApp',
+    customerCartClear: 'Clear',
+    customerCartRemove: 'Remove',
+    customerCartBarLabel: 'Inquiry list',
+    customerSelect: 'Select',
+    customerSelected: 'Selected',
+    customerMultiInquiryPrefix: 'Hi, I’d like to enquire about these products:',
+    customerMultiInquiryTotal: 'Total approx.',
+
+    adminLoginTitle: '⚙️ Admin',
+    adminLoginSubtitle: 'Sign in with your Google account, then create your own Google Sheet and Drive image folder.',
+    adminLoginButton: 'Sign in with Google',
+    adminConnectedAs: 'Signed in as: {{email}}',
+    adminLanguageSetupTitle: 'Google account setup',
+    adminLanguageSetupDesc: 'After signing in, you can automatically create a new spreadsheet and image folder, then download an updated `config.js` to apply it to the site.',
+    adminLanguageSetupAction: 'Create my Sheet + Drive folder',
+    adminLanguageSetupCopy: 'Copy config snippet',
+    adminLanguageSetupDownload: 'Download config.js',
+    adminLanguageSetupNote: 'Note: this static site still needs the new Sheet / Folder IDs copied back into `js/config.js` for the public storefront to use them.',
+    adminStatsTotal: 'Total products',
+    adminStatsOn: 'Live',
+    adminStatsOff: 'Offline',
+    adminProductsTitle: 'Product management',
+    adminAddProduct: '＋ Add product',
+    adminFormAddTitle: 'Add product',
+    adminFormEditTitle: 'Edit product',
+    adminFieldName: 'Product name *',
+    adminFieldPrice: 'Price (HK$) *',
+    adminFieldCategory: 'Category',
+    adminFieldStatus: 'Status',
+    adminFieldDescription: 'Description',
+    adminFieldImage: 'Product photo',
+    adminImageDropTitle: 'Click to upload photo',
+    adminImageDropSubtitle: 'JPG / PNG · Square recommended · Max 10MB',
+    adminImageUrlPlaceholder: 'Or paste an image URL',
+    adminCancel: 'Cancel',
+    adminSave: 'Save product',
+    adminSaving: 'Saving...',
+    adminTableProduct: 'Product',
+    adminTablePrice: 'Price',
+    adminTableStatus: 'Status',
+    adminTableActions: 'Actions',
+    adminTableLoading: 'Loading...',
+    adminTableEmpty: 'No products yet — add one',
+    adminStatusOn: '● Live',
+    adminStatusOff: '● Offline',
+    adminEdit: 'Edit',
+    adminDelete: 'Delete',
+    adminToastLoginFailed: 'Login failed',
+    adminToastCreating: 'Creating...',
+    adminToastCreated: 'Created a new Google Sheet and Drive folder',
+    adminToastCopySuccess: 'Config snippet copied',
+    adminToastCopyFail: 'Copy failed — please copy it manually',
+    adminToastMissingFields: 'Please fill in product name and price',
+    adminToastUploading: 'Uploading photo...',
+    adminToastSaved: 'Saved successfully',
+    adminToastAddSuccess: 'Product added ✓',
+    adminToastUpdateSuccess: 'Product updated ✓',
+    adminToastDeleteSuccess: 'Product deleted',
+    adminToastDeleteFail: 'Delete failed',
+    adminToastErrorPrefix: 'Error: ',
+    adminConfirmDelete: 'Delete “{{name}}”? This cannot be undone.',
+    adminConfigSnippetTitle: 'Config snippet',
+    adminConfigSnippetHint: 'Paste the content below into `js/config.js` to switch the site to your own Google account resources.',
+    adminShopNameLabel: 'Shop name',
+    adminShopNamePlaceholder: 'e.g. myShop Boutique',
+    adminWhatsAppLabel: 'WhatsApp number',
+    adminWhatsAppPlaceholder: '85298765432',
+    adminWhatsAppHint: 'Hong Kong format: 852 + 8 digits (no + or spaces). Once saved, the WhatsApp button on every product uses this number.',
+    adminWhatsAppSave: 'Save WhatsApp number',
+    adminWhatsAppSaved: 'WhatsApp number saved ✓',
+    adminWhatsAppInvalid: 'Please enter a valid WhatsApp number (digits only)',
+    adminGenerateConfig: 'Generate config.js',
+    adminCurrentAccountLabel: 'Current account',
+    adminSheetIdLabel: 'Google Sheet ID',
+    adminFolderIdLabel: 'Drive folder ID',
+    adminSetupNameHint: 'This name will be used when creating the new Sheet and Drive folder.',
+    adminSetupPublicNote: 'The public storefront still needs the updated settings copied into `js/config.js`.',
+
+    // Category manager
+    adminCatTitle: 'Category management',
+    adminCatDesc: 'Add / edit / delete your product categories here. The storefront filters and the product form both use this list.',
+    adminCatNewPlaceholder: 'New category name, e.g. Handbags',
+    adminCatAdd: '＋ Add category',
+    adminCatEnabled: 'Show',
+    adminCatDisabled: 'Hide',
+    adminCatDelete: 'Delete',
+    adminCatEmpty: 'No categories yet — add one above.',
+    adminCatSaved: 'Categories saved ✓',
+    adminCatDup: 'That category already exists',
+    adminCatSaveBtn: 'Save categories',
+    adminCatNone: '(Uncategorized)',
+
+    // Site text
+    adminSiteTitle: 'Site text',
+    adminSiteDesc: 'Edit the wording shown on the storefront. Saves instantly for all visitors (no re-upload needed).',
+    adminSiteShopName: 'Shop name',
+    adminSiteShopNamePh: 'e.g. myShop Boutique',
+    adminSiteTagline: 'Tagline',
+    adminSiteTaglinePh: 'e.g. Order via WhatsApp · Local delivery',
+    adminSiteCopyright: 'Footer copyright text',
+    adminSiteCopyrightPh: 'e.g. © {{year}} myShop. All rights reserved.',
+    adminSiteSave: 'Save site text',
+    adminSiteSaved: 'Site text saved ✓',
+
+    // Security
+    adminSecTitle: '🔒 Admin security',
+    adminSecDesc: 'Only the Google emails below can sign in to this admin. Anyone else — even if they know the URL and use their own Google account — is rejected and cannot touch your storefront data.',
+    adminSecListLabel: 'Allowed Google emails (one per line)',
+    adminSecSave: 'Save allow-list',
+    adminSecSaved: 'Allow-list saved ✓',
+    adminSecEmpty: 'The list cannot be empty — keep at least one email.',
+    adminSecInvalid: 'Please enter at least one valid email address.',
+    adminSecLockoutWarn: 'Warning: your current email is not in the list. If you save, you will lock yourself out. Continue?',
+    adminAccessDeniedTitle: '⛔ Access denied',
+    adminAccessDeniedDesc: 'Your Google account ({{email}}) is not on the allow-list and cannot enter the admin.',
+    adminAccessDeniedBack: 'Sign in with another account',
+    adminSettingsSaveFail: 'Save failed, please retry',
+  },
+};
+
+function normalizeMyShopLang(lang) {
+  return lang === 'en' ? 'en' : 'zh-HK';
+}
+
+function getMyShopLang() {
+  try {
+    return normalizeMyShopLang(localStorage.getItem(MYSHOP_LANGUAGE_KEY));
+  } catch {
+    return 'zh-HK';
+  }
+}
+
+function setMyShopLang(lang) {
+  const normalized = normalizeMyShopLang(lang);
+  try {
+    localStorage.setItem(MYSHOP_LANGUAGE_KEY, normalized);
+  } catch {
+    // no-op
+  }
+  document.documentElement.lang = normalized;
+  document.documentElement.dataset.myshopLang = normalized;
+  window.dispatchEvent(new CustomEvent('myshop:langchange', { detail: { lang: normalized } }));
+  return normalized;
+}
+
+function tMyShop(key, vars = {}, lang = getMyShopLang()) {
+  const dictionary = MYSHOP_I18N[normalizeMyShopLang(lang)] || MYSHOP_I18N['zh-HK'];
+  const fallback = MYSHOP_I18N['zh-HK'];
+  let value = dictionary[key] ?? fallback[key] ?? key;
+  if (typeof value !== 'string') return value;
+  return value.replace(/\{\{(\w+)\}\}/g, (_, name) => {
+    const replacement = vars[name];
+    return replacement === undefined || replacement === null ? '' : String(replacement);
+  });
+}
+
+window.MYSHOP_I18N = MYSHOP_I18N;
+window.getMyShopLang = getMyShopLang;
+window.setMyShopLang = setMyShopLang;
+window.tMyShop = tMyShop;

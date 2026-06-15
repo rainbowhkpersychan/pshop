@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 後台 — myShop</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:#1a1a2e; --mid:#4a4a6a; --soft:#8888aa; --line:#e4e4f0;
+    --bg:#f7f7fb; --white:#fff; --accent:#ff6b35; --danger:#e53e3e;
+    --success:#38a169; --warn:#d69e2e;
+  }
+  body { font-family:'Noto Sans HK',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; }
+
+  /* lang toggle (shared) */
+  .lang-toggle { display:flex; border:1.5px solid var(--line); border-radius:20px; overflow:hidden; }
+  .lang-toggle button { background:white; border:none; padding:6px 13px; font-size:12px; font-weight:600; cursor:pointer; color:var(--soft); font-family:inherit; transition:all .2s; }
+  .lang-toggle button.active { background:var(--accent); color:white; }
+
+  /* ── LOGIN ── */
+  #login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:20px; gap:16px; }
+  .login-box { background:white; border-radius:20px; padding:36px 32px; width:100%; max-width:380px; box-shadow:0 4px 24px rgba(0,0,0,.08); text-align:center; }
+  .login-box h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
+  .login-box p { color:var(--soft); font-size:13px; margin-bottom:28px; line-height:1.6; }
+  .google-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px; background:white; border:1.5px solid var(--line); border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink); transition:all .2s; }
+  .google-btn:hover { border-color:var(--accent); background:rgba(255,107,53,.04); }
+  .google-btn svg { width:20px; height:20px; }
+
+  /* ── LAYOUT ── */
+  #admin-screen { display:none; }
+  .topbar { background:white; border-bottom:1px solid var(--line); height:58px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .topbar-logo { font-weight:700; font-size:18px; }
+  .topbar-logo span { color:var(--accent); }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .user-avatar { width:34px; height:34px; border-radius:50%; background:var(--bg); border:1.5px solid var(--line); object-fit:cover; }
+  .logout-btn { background:none; border:1.5px solid var(--line); padding:6px 14px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:var(--mid); font-family:inherit; }
+
+  .wrap { max-width:960px; margin:0 auto; padding:24px 16px 60px; }
+
+  /* ── ACCOUNT / SETUP CARD ── */
+  .account-card { background:white; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .account-card h3 { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .account-card .muted { font-size:12.5px; color:var(--soft); line-height:1.65; margin-bottom:14px; }
+  .account-row { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--mid); margin-bottom:6px; flex-wrap:wrap; }
+  .account-row b { color:var(--ink); }
+  .pill { font-family:ui-monospace,monospace; font-size:11px; background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:6px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .setup-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  .btn-primary { background:var(--accent); color:white; border:none; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-ghost { background:var(--bg); color:var(--mid); border:1.5px solid var(--line); padding:10px 16px; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; }
+  .config-snippet { margin-top:14px; display:none; }
+  .config-snippet.open { display:block; }
+  .config-snippet textarea { width:100%; min-height:140px; border:1.5px solid var(--line); border-radius:10px; padding:12px; font-family:ui-monospace,monospace; font-size:11.5px; color:var(--ink); background:var(--bg); resize:vertical; }
+  .config-snippet .note { font-size:11.5px; color:var(--warn); margin-top:8px; line-height:1.6; }
+
+  /* ── STATS ── */
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+  .stat { background:white; border-radius:12px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .stat .n { font-size:26px; font-weight:700; }
+  .stat .l { font-size:12px; color:var(--soft); margin-top:2px; }
+  .stat.a .n { color:var(--accent); }
+  .stat.g .n { color:var(--success); }
+
+  /* ── TOOLBAR ── */
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .toolbar h2 { font-size:18px; font-weight:700; }
+  .btn-add { background:var(--accent); color:white; border:none; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px; }
+  .btn-add:hover { opacity:.88; }
+
+  /* ── FORM CARD ── */
+  .form-card { background:white; border-radius:16px; padding:22px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); display:none; }
+  .form-card.open { display:block; }
+  .form-card h3 { font-size:15px; font-weight:600; margin-bottom:18px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:500px){ .form-grid { grid-template-columns:1fr; } }
+  .fg { display:flex; flex-direction:column; gap:5px; }
+  .fg.full { grid-column:1/-1; }
+  .fg label { font-size:11px; font-weight:700; color:var(--soft); text-transform:uppercase; letter-spacing:.5px; }
+  .fg input, .fg textarea, .fg select { border:1.5px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px; font-family:inherit; color:var(--ink); outline:none; background:var(--bg); transition:border-color .2s; }
+  .fg input:focus, .fg textarea:focus, .fg select:focus { border-color:var(--accent); background:white; }
+  .fg textarea { resize:vertical; min-height:75px; }
+
+  /* Image upload */
+  .img-drop { border:2px dashed var(--line); border-radius:10px; padding:28px; text-align:center; cursor:pointer; transition:all .2s; background:var(--bg); position:relative; }
+  .img-drop:hover { border-color:var(--accent); }
+  .img-drop input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .img-drop .icon { font-size:28px; margin-bottom:6px; }
+  .img-drop p { font-size:12px; color:var(--mid); }
+  .img-drop small { font-size:11px; color:var(--soft); }
+  .img-preview { width:80px; height:80px; border-radius:8px; object-fit:cover; margin-top:10px; display:none; }
+
+  .form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+  .btn-save { background:var(--accent); color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-save:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-cancel { background:var(--bg); color:var(--mid); border:1.5px solid var(--line); padding:10px 18px; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; }
+
+  /* ── TABLE ── */
+  .table-wrap { background:white; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .tbl-head { display:grid; grid-template-columns:52px 1fr 90px 80px 130px; gap:12px; padding:11px 16px; background:var(--bg); font-size:11px; font-weight:700; color:var(--soft); text-transform:uppercase; letter-spacing:.5px; }
+  .tbl-row { display:grid; grid-template-columns:52px 1fr 90px 80px 130px; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); align-items:center; transition:background .15s; }
+  .tbl-row:last-child { border-bottom:none; }
+  .tbl-row:hover { background:var(--bg); }
+  @media(max-width:600px){
+    .tbl-head, .tbl-row { grid-template-columns:44px 1fr 80px; }
+    .tbl-head .h-status, .tbl-head .h-actions,
+    .tbl-row .c-status, .tbl-row .c-actions-full { display:none; }
+  }
+  .thumb { width:42px; height:42px; border-radius:8px; object-fit:cover; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .p-name { font-size:13px; font-weight:600; }
+  .p-cat  { font-size:11px; color:var(--soft); margin-top:1px; }
+  .p-price { font-size:13px; font-weight:600; color:var(--accent); }
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge.on  { background:rgba(56,161,105,.12); color:var(--success); }
+  .badge.off { background:rgba(229,62,62,.10);  color:var(--danger); }
+  .row-btns { display:flex; gap:6px; }
+  .btn-e { background:rgba(74,74,106,.08); color:var(--mid); border:none; padding:6px 11px; border-radius:7px; font-size:11px; font-weight:500; cursor:pointer; font-family:inherit; }
+  .btn-e:hover { background:rgba(74,74,106,.16); }
+  .btn-d { background:rgba(229,62,62,.08); color:var(--danger); border:none; padding:6px 11px; border-radius:7px; font-size:11px; font-weight:500; cursor:pointer; font-family:inherit; }
+  .btn-d:hover { background:rgba(229,62,62,.16); }
+  .mobile-btns { display:none; }
+  @media(max-width:600px){ .mobile-btns { display:flex; gap:5px; } }
+
+  /* ── TOAST ── */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:white; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:500; z-index:999; opacity:0; pointer-events:none; transition:opacity .3s; white-space:nowrap; }
+  .toast.show { opacity:1; }
+  .toast.err { background:var(--danger); }
+
+  /* ── LOADING ── */
+  .tbl-loading { text-align:center; padding:40px; color:var(--soft); font-size:13px; }
+  .spinner { width:28px; height:28px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* ── MANAGER CARDS (category / site / security) ── */
+  .mcard { background:white; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .mcard h3 { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .mcard .muted { font-size:12.5px; color:var(--soft); line-height:1.65; margin-bottom:14px; }
+  .cat-add-row { display:flex; gap:8px; margin-bottom:14px; }
+  .cat-add-row input { flex:1; border:1.5px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px; font-family:inherit; background:var(--bg); outline:none; }
+  .cat-add-row input:focus { border-color:var(--accent); background:white; }
+  .cat-list { display:flex; flex-direction:column; gap:8px; }
+  .cat-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; background:var(--bg); }
+  .cat-item.off { opacity:.55; }
+  .cat-item input.cat-name { flex:1; border:none; background:transparent; font-size:13px; font-weight:600; font-family:inherit; color:var(--ink); outline:none; }
+  .cat-item input.cat-name:focus { border-bottom:1.5px solid var(--accent); }
+  .cat-toggle { background:rgba(74,74,106,.08); color:var(--mid); border:none; padding:5px 11px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .cat-toggle.on { background:rgba(56,161,105,.14); color:var(--success); }
+  .cat-del { background:rgba(229,62,62,.08); color:var(--danger); border:none; padding:5px 11px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .sec-textarea, .site-input { width:100%; border:1.5px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; font-family:inherit; color:var(--ink); background:var(--bg); outline:none; }
+  .sec-textarea:focus, .site-input:focus { border-color:var(--accent); background:white; }
+  .sec-textarea { min-height:90px; font-family:ui-monospace,monospace; resize:vertical; }
+  .field-row { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+  .field-row label { font-size:11px; font-weight:700; color:var(--soft); text-transform:uppercase; letter-spacing:.5px; }
+
+  /* ── ACCESS DENIED ── */
+  #denied-screen { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:20px; gap:16px; text-align:center; }
+  .denied-box { background:white; border-radius:20px; padding:36px 32px; max-width:400px; box-shadow:0 4px 24px rgba(0,0,0,.08); }
+  .denied-box h1 { font-size:20px; color:var(--danger); margin-bottom:10px; }
+  .denied-box p { font-size:13px; color:var(--mid); line-height:1.7; margin-bottom:22px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lang-toggle">
+    <button id="login-lang-zh" onclick="switchLang('zh-HK')">繁中</button>
+    <button id="login-lang-en" onclick="switchLang('en')">EN</button>
+  </div>
+  <div class="login-box">
+    <h1 id="login-title">⚙️ Admin 後台</h1>
+    <p id="login-subtitle"></p>
+    <button class="google-btn" onclick="googleSignIn()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <span id="login-btn-label"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ACCESS DENIED -->
+<div id="denied-screen">
+  <div class="lang-toggle">
+    <button id="denied-lang-zh" onclick="switchLang('zh-HK')">繁中</button>
+    <button id="denied-lang-en" onclick="switchLang('en')">EN</button>
+  </div>
+  <div class="denied-box">
+    <h1 id="denied-title"></h1>
+    <p id="denied-desc"></p>
+    <button class="btn-ghost" id="denied-back" onclick="signOut()"></button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <div class="topbar">
+    <div class="topbar-logo">my<span>Shop</span> <span id="topbar-sub" style="font-size:12px;font-weight:400;color:var(--soft)"></span></div>
+    <div class="topbar-right">
+      <div class="lang-toggle">
+        <button id="admin-lang-zh" onclick="switchLang('zh-HK')">繁中</button>
+        <button id="admin-lang-en" onclick="switchLang('en')">EN</button>
+      </div>
+      <img id="user-avatar" class="user-avatar" src="" alt="">
+      <button class="logout-btn" id="logout-btn" onclick="signOut()">登出</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Account / Google setup -->
+    <div class="account-card">
+      <h3 id="ac-title"></h3>
+      <p class="muted" id="ac-desc"></p>
+      <div class="account-row"><span id="ac-current-label"></span>&nbsp;<b id="ac-email">—</b></div>
+      <div class="account-row"><span id="ac-sheet-label"></span>&nbsp;<span class="pill" id="ac-sheet">—</span></div>
+      <div class="account-row"><span id="ac-folder-label"></span>&nbsp;<span class="pill" id="ac-folder">—</span></div>
+      <div class="fg full" style="margin-top:12px">
+        <label id="ac-name-label"></label>
+        <input id="ac-name" type="text">
+        <small style="font-size:11px;color:var(--soft)" id="ac-name-hint"></small>
+      </div>
+      <div class="fg full" style="margin-top:12px">
+        <label id="ac-wa-label"></label>
+        <input id="ac-wa" type="tel" inputmode="numeric">
+        <small style="font-size:11px;color:var(--soft)" id="ac-wa-hint"></small>
+      </div>
+      <div class="setup-actions">
+        <button class="btn-primary" id="ac-wa-save" onclick="saveWhatsApp()"></button>
+        <button class="btn-primary" id="ac-create-btn" onclick="createMyResources()"></button>
+        <button class="btn-ghost" id="ac-config-btn" onclick="toggleConfigSnippet()"></button>
+      </div>
+      <div class="config-snippet" id="config-snippet">
+        <textarea id="config-text" readonly></textarea>
+        <div class="setup-actions">
+          <button class="btn-primary" id="ac-copy-btn" onclick="copyConfig()"></button>
+          <button class="btn-ghost" id="ac-download-btn" onclick="downloadConfig()"></button>
+        </div>
+        <p class="note" id="ac-public-note"></p>
+      </div>
+    </div>
+
+    <!-- Site text manager -->
+    <div class="mcard">
+      <h3 id="site-title"></h3>
+      <p class="muted" id="site-desc"></p>
+      <div class="field-row">
+        <label id="site-name-label"></label>
+        <input id="site-name" class="site-input" type="text">
+      </div>
+      <div class="field-row">
+        <label id="site-tagline-label"></label>
+        <input id="site-tagline" class="site-input" type="text">
+      </div>
+      <div class="field-row">
+        <label id="site-copyright-label"></label>
+        <input id="site-copyright" class="site-input" type="text">
+        <small id="site-copyright-hint" style="font-size:11px;color:var(--soft)"></small>
+      </div>
+      <button class="btn-primary" id="site-save" onclick="saveSiteText()"></button>
+    </div>
+
+    <!-- Category manager -->
+    <div class="mcard">
+      <h3 id="cat-title"></h3>
+      <p class="muted" id="cat-desc"></p>
+      <div class="cat-add-row">
+        <input id="cat-new" type="text">
+        <button class="btn-primary" id="cat-add-btn" onclick="addCategory()"></button>
+      </div>
+      <div class="cat-list" id="cat-list"></div>
+      <div class="setup-actions">
+        <button class="btn-primary" id="cat-save" onclick="saveCategories()"></button>
+      </div>
+    </div>
+
+    <!-- Security: allowed admins -->
+    <div class="mcard">
+      <h3 id="sec-title"></h3>
+      <p class="muted" id="sec-desc"></p>
+      <div class="field-row">
+        <label id="sec-label"></label>
+        <textarea id="sec-list" class="sec-textarea"></textarea>
+      </div>
+      <button class="btn-primary" id="sec-save" onclick="saveSecurity()"></button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat a"><div class="n" id="stat-total">—</div><div class="l" id="stat-total-l"></div></div>
+      <div class="stat g"><div class="n" id="stat-on">—</div><div class="l" id="stat-on-l"></div></div>
+      <div class="stat">  <div class="n" id="stat-off">—</div><div class="l" id="stat-off-l"></div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <h2 id="products-title"></h2>
+      <button class="btn-add" id="add-btn" onclick="openForm()"></button>
+    </div>
+
+    <!-- Form -->
+    <div class="form-card" id="form-card">
+      <h3 id="form-title"></h3>
+      <input type="hidden" id="f-row">
+      <input type="hidden" id="f-id">
+      <div class="form-grid">
+        <div class="fg"><label id="lbl-name"></label><input id="f-name" type="text"></div>
+        <div class="fg"><label id="lbl-price"></label><input id="f-price" type="number" min="0"></div>
+        <div class="fg"><label id="lbl-cat"></label><select id="f-cat"></select></div>
+        <div class="fg"><label id="lbl-status"></label>
+          <select id="f-status">
+            <option value="on">🟢</option>
+            <option value="off">🔴</option>
+          </select>
+        </div>
+        <div class="fg full"><label id="lbl-desc"></label><textarea id="f-desc"></textarea></div>
+        <div class="fg full"><label id="lbl-img"></label>
+          <div class="img-drop">
+            <input type="file" id="f-img" accept="image/*" onchange="previewImg(this)">
+            <div class="icon">📸</div>
+            <p id="img-drop-title"></p>
+            <small id="img-drop-sub"></small>
+          </div>
+          <img id="img-preview" class="img-preview" src="" alt="">
+          <input id="f-img-url" type="text" style="margin-top:8px" oninput="syncUrlPreview(this)">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancel-btn" onclick="closeForm()"></button>
+        <button class="btn-save" id="btn-save" onclick="saveProduct()"></button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap" id="table-wrap">
+      <div class="tbl-loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="../js/config.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/sheets.js"></script>
+<script>
+// ── AUTH ─────────────────────────────────────────
+let accessToken = null;
+let tokenClient = null;
+let userEmail = '';
+
+window.onload = () => {
+  // init language
+  if (!localStorage.getItem(MYSHOP_LANGUAGE_KEY) && CONFIG.DEFAULT_LANG) setMyShopLang(CONFIG.DEFAULT_LANG);
+  applyTexts();
+  updateLangButtons();
+
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.GOOGLE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    callback: async (resp) => {
+      if (resp.error) { showToast(tMyShop('adminToastLoginFailed'), true); return; }
+      accessToken = resp.access_token;
+      const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }).then(r => r.json());
+      userEmail = info.email || '';
+      document.getElementById('user-avatar').src = info.picture || '';
+      if (!isAllowedAdmin(userEmail)) {
+        // 唔喺白名單 → 拒絕入後台，避免有人用自己 Google 帳戶改你個店
+        accessToken = null;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-screen').style.display = 'none';
+        document.getElementById('denied-screen').style.display = 'flex';
+        const de = document.getElementById('denied-desc');
+        if (de) de.textContent = tMyShop('adminDeniedDesc', { email: userEmail });
+        return;
+      }
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('denied-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      refreshAccountCard();
+      loadProducts();
+      loadSettings();
+    }
+  });
+};
+
+function googleSignIn() { tokenClient.requestAccessToken(); }
+function signOut() {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
+  accessToken = null;
+  userEmail = '';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('denied-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ── LANGUAGE ─────────────────────────────────────
+function switchLang(lang) {
+  setMyShopLang(lang);
+  applyTexts();
+  updateLangButtons();
+  if (accessToken) { refreshAccountCard(); renderTable(); updateStats(); renderCategories(); }
+}
+
+function updateLangButtons() {
+  const lang = getMyShopLang();
+  ['login-lang-zh','admin-lang-zh','denied-lang-zh'].forEach(id => document.getElementById(id)?.classList.toggle('active', lang === 'zh-HK'));
+  ['login-lang-en','admin-lang-en','denied-lang-en'].forEach(id => document.getElementById(id)?.classList.toggle('active', lang === 'en'));
+}
+
+function applyTexts() {
+  const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  const ph  = (id, text) => { const el = document.getElementById(id); if (el) el.placeholder = text; };
+
+  // login / denied
+  set('login-title', tMyShop('adminLoginTitle'));
+  set('login-subtitle', tMyShop('adminLoginSubtitle'));
+  set('login-btn-label', tMyShop('adminLoginButton'));
+  set('denied-title', tMyShop('adminAccessDeniedTitle'));
+  set('denied-desc', tMyShop('adminAccessDeniedDesc', { email: userEmail || '—' }));
+  set('denied-back', tMyShop('adminAccessDeniedBack'));
+
+  // topbar
+  set('topbar-sub', getMyShopLang() === 'en' ? 'Admin' : '後台');
+  set('logout-btn', getMyShopLang() === 'en' ? 'Sign out' : '登出');
+
+  // account card
+  set('ac-title', tMyShop('adminLanguageSetupTitle'));
+  set('ac-desc', tMyShop('adminLanguageSetupDesc'));
+  set('ac-current-label', tMyShop('adminCurrentAccountLabel') + '：');
+  set('ac-sheet-label', tMyShop('adminSheetIdLabel') + '：');
+  set('ac-folder-label', tMyShop('adminFolderIdLabel') + '：');
+  set('ac-name-label', tMyShop('adminShopNameLabel'));
+  set('ac-name-hint', tMyShop('adminSetupNameHint'));
+  set('ac-wa-label', tMyShop('adminWhatsAppLabel'));
+  set('ac-wa-hint', tMyShop('adminWhatsAppHint'));
+  set('ac-wa-save', tMyShop('adminWhatsAppSave'));
+  set('ac-create-btn', tMyShop('adminLanguageSetupAction'));
+  set('ac-config-btn', tMyShop('adminConfigSnippetTitle'));
+  set('ac-copy-btn', tMyShop('adminLanguageSetupCopy'));
+  set('ac-download-btn', tMyShop('adminLanguageSetupDownload'));
+  set('ac-public-note', tMyShop('adminSetupPublicNote'));
+
+  // site text
+  set('site-title', tMyShop('adminSiteTitle'));
+  set('site-desc', tMyShop('adminSiteDesc'));
+  set('site-name-label', tMyShop('adminSiteShopName'));
+  set('site-tagline-label', tMyShop('adminSiteTagline'));
+  set('site-copyright-label', tMyShop('adminSiteCopyright'));
+  set('site-copyright-hint', tMyShop('adminSiteCopyrightHint'));
+  set('site-save', tMyShop('adminSiteSave'));
+
+  // category manager
+  set('cat-title', tMyShop('adminCatTitle'));
+  set('cat-desc', tMyShop('adminCatDesc'));
+  set('cat-add-btn', tMyShop('adminCatAdd'));
+  set('cat-save', tMyShop('adminCatSaveBtn'));
+  ph('cat-new', tMyShop('adminCatNewPlaceholder'));
+
+  // security
+  set('sec-title', tMyShop('adminSecTitle'));
+  set('sec-desc', tMyShop('adminSecDesc'));
+  set('sec-label', tMyShop('adminSecListLabel'));
+  set('sec-save', tMyShop('adminSecSave'));
+
+  // stats
+  set('stat-total-l', tMyShop('adminStatsTotal'));
+  set('stat-on-l', tMyShop('adminStatsOn'));
+  set('stat-off-l', tMyShop('adminStatsOff'));
+
+  // toolbar / form
+  set('products-title', tMyShop('adminProductsTitle'));
+  set('add-btn', tMyShop('adminAddProduct'));
+  set('lbl-name', tMyShop('adminFieldName'));
+  set('lbl-price', tMyShop('adminFieldPrice'));
+  set('lbl-cat', tMyShop('adminFieldCategory'));
+  set('lbl-status', tMyShop('adminFieldStatus'));
+  set('lbl-desc', tMyShop('adminFieldDescription'));
+  set('lbl-img', tMyShop('adminFieldImage'));
+  set('img-drop-title', tMyShop('adminImageDropTitle'));
+  set('img-drop-sub', tMyShop('adminImageDropSubtitle'));
+  set('cancel-btn', tMyShop('adminCancel'));
+  set('btn-save', tMyShop('adminSave'));
+
+  // placeholders
+  ph('ac-name', tMyShop('adminShopNamePlaceholder'));
+  ph('ac-wa', tMyShop('adminWhatsAppPlaceholder'));
+  ph('site-name', tMyShop('adminSiteShopNamePh'));
+  ph('site-tagline', tMyShop('adminSiteTaglinePh'));
+  ph('site-copyright', tMyShop('adminSiteCopyrightPh'));
+  ph('sec-list', tMyShop('adminSecListLabel'));
+  ph('f-img-url', tMyShop('adminImageUrlPlaceholder'));
+
+  const statusSel = document.getElementById('f-status');
+  if (statusSel) {
+    statusSel.options[0].textContent = tMyShop('adminStatusOn');
+    statusSel.options[1].textContent = tMyShop('adminStatusOff');
+  }
+
+  const editing = document.getElementById('f-row')?.value;
+  set('form-title', editing ? tMyShop('adminFormEditTitle') : tMyShop('adminFormAddTitle'));
+
+  const nameEl = document.getElementById('ac-name');
+  if (nameEl && !nameEl.value) nameEl.value = CONFIG.SHOP_NAME || '';
+}
+
+// ── ACCOUNT CARD ─────────────────────────────────
+function refreshAccountCard() {
+  document.getElementById('ac-email').textContent = userEmail || '—';
+  document.getElementById('ac-sheet').textContent = getEffectiveSheetId() || '—';
+  document.getElementById('ac-folder').textContent = getEffectiveFolderId() || '—';
+  const waEl = document.getElementById('ac-wa');
+  if (waEl && !waEl.value) waEl.value = getEffectiveWhatsApp() || '';
+}
+
+function saveWhatsApp() {
+  const raw = document.getElementById('ac-wa').value.trim().replace(/[^0-9]/g, '');
+  if (!raw) { showToast(tMyShop('adminWhatsAppInvalid'), true); return; }
+  setEffectiveWhatsApp(raw);
+  document.getElementById('ac-wa').value = raw;
+  buildConfigSnippet();
+  showToast(tMyShop('adminWhatsAppSaved'));
+}
+
+async function createMyResources() {
+  if (!accessToken) return;
+  const btn = document.getElementById('ac-create-btn');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = tMyShop('adminToastCreating');
+  try {
+    const shopName = document.getElementById('ac-name').value.trim() || CONFIG.SHOP_NAME || 'myShop';
+    await setupMyShopResources(accessToken, shopName);
+    refreshAccountCard();
+    buildConfigSnippet();
+    document.getElementById('config-snippet').classList.add('open');
+    showToast(tMyShop('adminToastCreated'));
+    await loadSettings();
+    await loadProducts();
+  } catch (e) {
+    console.error(e);
+    showToast(tMyShop('adminToastErrorPrefix') + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+function buildConfigSnippet() {
+  const shopName = document.getElementById('ac-name').value.trim() || CONFIG.SHOP_NAME || 'myShop';
+  const siteName = document.getElementById('site-name')?.value.trim() || shopName;
+  const siteTagline = document.getElementById('site-tagline')?.value.trim() || CONFIG.SHOP_TAGLINE || '';
+  const lines = [
+    '// ' + tMyShop('adminConfigSnippetHint'),
+    'const CONFIG = {',
+    `  WHATSAPP_NUMBER: '${getEffectiveWhatsApp()}',`,
+    `  SHEET_ID: '${getEffectiveSheetId()}',`,
+    `  API_KEY: '${CONFIG.API_KEY}',`,
+    `  GOOGLE_CLIENT_ID: '${CONFIG.GOOGLE_CLIENT_ID}',`,
+    `  DRIVE_FOLDER_ID: '${getEffectiveFolderId()}',`,
+    `  SHOP_NAME: '${siteName.replace(/'/g, "\\'")}',`,
+    `  SHOP_TAGLINE: '${siteTagline.replace(/'/g, "\\'")}',`,
+    `  DEFAULT_LANG: '${CONFIG.DEFAULT_LANG || 'zh-HK'}',`,
+    '};',
+  ];
+  document.getElementById('config-text').value = lines.join('\n');
+}
+
+function toggleConfigSnippet() {
+  buildConfigSnippet();
+  document.getElementById('config-snippet').classList.toggle('open');
+}
+
+async function copyConfig() {
+  const text = document.getElementById('config-text').value;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(tMyShop('adminToastCopySuccess'));
+  } catch {
+    showToast(tMyShop('adminToastCopyFail'), true);
+  }
+}
+
+function downloadConfig() {
+  const text = document.getElementById('config-text').value;
+  const blob = new Blob([text], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'config.js';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── PRODUCTS ─────────────────────────────────────
+let products = [];
+
+async function loadProducts() {
+  document.getElementById('table-wrap').innerHTML = `<div class="tbl-loading"><div class="spinner"></div>${tMyShop('adminTableLoading')}</div>`;
+  products = await fetchAllProducts(accessToken);
+  updateStats();
+  renderTable();
+}
+
+// ── SETTINGS: categories + site text + security ───
+let managedCategories = [];
+let siteSettings = {};
+
+async function loadSettings() {
+  try {
+    const data = await fetchAdminSettings(accessToken);
+    managedCategories = data.categories || [];
+    siteSettings = data.site || {};
+  } catch {
+    managedCategories = [];
+    siteSettings = {};
+  }
+  // populate site text fields
+  document.getElementById('site-name').value = siteSettings.shopName || CONFIG.SHOP_NAME || '';
+  document.getElementById('site-tagline').value = siteSettings.tagline || CONFIG.SHOP_TAGLINE || '';
+  document.getElementById('site-copyright').value = siteSettings.copyright || CONFIG.COPYRIGHT || '';
+  // security allow-list
+  document.getElementById('sec-list').value = getAllowedAdmins().join('\n');
+  renderCategories();
+}
+
+function renderCategories() {
+  const box = document.getElementById('cat-list');
+  if (!managedCategories.length) {
+    box.innerHTML = `<div class="cat-empty">${tMyShop('adminCatEmpty')}</div>`;
+    return;
+  }
+  box.innerHTML = managedCategories.map((c, i) => `
+    <div class="cat-row">
+      <input class="cat-input" value="${(c.name || '').replace(/"/g,'&quot;')}" oninput="onCatRename(${i}, this.value)">
+      <button class="cat-del" onclick="removeCategory(${i})" title="${tMyShop('adminDelete')}">✕</button>
+    </div>
+  `).join('');
+}
+
+function onCatRename(i, val) {
+  if (managedCategories[i]) managedCategories[i].name = val;
+}
+
+function addCategory() {
+  const input = document.getElementById('cat-new');
+  const name = input.value.trim();
+  if (!name) return;
+  if (managedCategories.some(c => c.name === name)) { showToast(tMyShop('adminCatDup'), true); return; }
+  managedCategories.push({ id: 'cat_' + Date.now(), name, enabled: true });
+  input.value = '';
+  renderCategories();
+}
+
+function removeCategory(i) {
+  managedCategories.splice(i, 1);
+  renderCategories();
+}
+
+async function saveCategories() {
+  const btn = document.getElementById('cat-save');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = tMyShop('adminSaving');
+  try {
+    const cats = managedCategories.filter(c => (c.name || '').trim());
+    const ok = await saveAllSettings(cats, siteSettings, accessToken);
+    showToast(ok ? tMyShop('adminCatSaved') : tMyShop('adminToastDeleteFail'), !ok);
+    if (ok) await loadSettings();
+  } catch (e) {
+    showToast(tMyShop('adminToastErrorPrefix') + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function saveSiteText() {
+  const btn = document.getElementById('site-save');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = tMyShop('adminSaving');
+  try {
+    siteSettings.shopName = document.getElementById('site-name').value.trim();
+    siteSettings.tagline = document.getElementById('site-tagline').value.trim();
+    siteSettings.copyright = document.getElementById('site-copyright').value.trim();
+    const ok = await saveAllSettings(managedCategories, siteSettings, accessToken);
+    showToast(ok ? tMyShop('adminSiteSaved') : tMyShop('adminToastDeleteFail'), !ok);
+    if (ok) {
+      // reflect in topbar shop name field default
+      buildConfigSnippet();
+    }
+  } catch (e) {
+    showToast(tMyShop('adminToastErrorPrefix') + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+function saveSecurity() {
+  const lines = document.getElementById('sec-list').value
+    .split(/[\n,]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+  const valid = lines.filter(e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
+  if (!valid.length) { showToast(tMyShop('adminSecInvalid'), true); return; }
+  if (!valid.includes(String(userEmail).toLowerCase())) {
+    if (!confirm(tMyShop('adminSecLockoutWarn'))) return;
+  }
+  setAllowedAdmins(valid);
+  document.getElementById('sec-list').value = getAllowedAdmins().join('\n');
+  showToast(tMyShop('adminSecSaved'));
+}
+
+function updateStats() {
+  const on = products.filter(p => p.status === 'on').length;
+  const off = products.filter(p => p.status !== 'on').length;
+  document.getElementById('stat-total').textContent = products.length;
+  document.getElementById('stat-on').textContent = on;
+  document.getElementById('stat-off').textContent = off;
+}
+
+function renderTable() {
+  if (!products.length) {
+    document.getElementById('table-wrap').innerHTML = `<div class="tbl-loading">${tMyShop('adminTableEmpty')}</div>`;
+    return;
+  }
+  document.getElementById('table-wrap').innerHTML = `
+    <div class="tbl-head">
+      <div></div><div>${tMyShop('adminTableProduct')}</div><div>${tMyShop('adminTablePrice')}</div>
+      <div class="h-status">${tMyShop('adminTableStatus')}</div><div class="h-actions">${tMyShop('adminTableActions')}</div>
+    </div>
+    ${products.map(p => `
+      <div class="tbl-row">
+        <div>${p.imageUrl ? `<img class="thumb" src="${p.imageUrl}" onerror="this.outerHTML='<div class=\\'thumb\\'>🛍️</div>'">` : `<div class="thumb">🛍️</div>`}</div>
+        <div><div class="p-name">${p.name}</div><div class="p-cat">${p.category || '—'}</div></div>
+        <div class="p-price">HK$${p.price}</div>
+        <div class="c-status"><span class="badge ${p.status === 'on' ? 'on' : 'off'}">${p.status === 'on' ? tMyShop('adminStatusOn') : tMyShop('adminStatusOff')}</span></div>
+        <div class="c-actions-full row-btns">
+          <button class="btn-e" onclick="editProduct(${p.rowIndex})">${tMyShop('adminEdit')}</button>
+          <button class="btn-d" onclick="confirmDelete(${p.rowIndex})">${tMyShop('adminDelete')}</button>
+        </div>
+        <div class="mobile-btns">
+          <button class="btn-e" onclick="editProduct(${p.rowIndex})">${tMyShop('adminEdit')}</button>
+          <button class="btn-d" onclick="confirmDelete(${p.rowIndex})">${tMyShop('adminDelete')}</button>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ── FORM ─────────────────────────────────────────
+function populateCategorySelect(selected) {
+  const sel = document.getElementById('f-cat');
+  if (!sel) return;
+  const cats = (managedCategories || []).filter(c => (c.name || '').trim());
+  const opts = [`<option value="">${tMyShop('adminCatNone')}</option>`]
+    .concat(cats.map(c => `<option value="${(c.name||'').replace(/"/g,'&quot;')}">${c.name}</option>`));
+  // keep an existing value that isn't in the managed list (legacy)
+  if (selected && !cats.some(c => c.name === selected)) {
+    opts.push(`<option value="${selected.replace(/"/g,'&quot;')}">${selected}</option>`);
+  }
+  sel.innerHTML = opts.join('');
+  sel.value = selected || '';
+}
+
+function openForm(reset=true) {
+  if (reset) {
+    document.getElementById('form-title').textContent = tMyShop('adminFormAddTitle');
+    ['f-row','f-id','f-name','f-price','f-desc','f-img-url'].forEach(id => document.getElementById(id).value = '');
+    populateCategorySelect('');
+    document.getElementById('f-status').value = 'on';
+    document.getElementById('img-preview').style.display = 'none';
+  }
+  document.getElementById('form-card').classList.add('open');
+  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeForm() { document.getElementById('form-card').classList.remove('open'); }
+
+function previewImg(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('img-preview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function syncUrlPreview(input) {
+  const prev = document.getElementById('img-preview');
+  if (input.value) { prev.src = input.value; prev.style.display = 'block'; }
+  else prev.style.display = 'none';
+}
+
+function editProduct(rowIndex) {
+  const p = products.find(x => x.rowIndex === rowIndex);
+  if (!p) return;
+  document.getElementById('form-title').textContent = tMyShop('adminFormEditTitle');
+  document.getElementById('f-row').value = p.rowIndex;
+  document.getElementById('f-id').value = p.id;
+  document.getElementById('f-name').value = p.name;
+  document.getElementById('f-price').value = p.price;
+  populateCategorySelect(p.category);
+  document.getElementById('f-desc').value = p.description;
+  document.getElementById('f-status').value = p.status;
+  document.getElementById('f-img-url').value = p.imageUrl;
+  const prev = document.getElementById('img-preview');
+  if (p.imageUrl) { prev.src = p.imageUrl; prev.style.display = 'block'; }
+  openForm(false);
+}
+
+async function saveProduct() {
+  const name = document.getElementById('f-name').value.trim();
+  const price = document.getElementById('f-price').value.trim();
+  if (!name || !price) { showToast(tMyShop('adminToastMissingFields'), true); return; }
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = tMyShop('adminSaving');
+  try {
+    let imageUrl = document.getElementById('f-img-url').value.trim();
+    const imgFile = document.getElementById('f-img').files[0];
+    if (imgFile) {
+      showToast(tMyShop('adminToastUploading'));
+      imageUrl = await uploadImageToDrive(imgFile, accessToken);
+    }
+    const product = {
+      id: document.getElementById('f-id').value || '',
+      name, price,
+      category: document.getElementById('f-cat').value.trim(),
+      description: document.getElementById('f-desc').value.trim(),
+      imageUrl,
+      status: document.getElementById('f-status').value,
+    };
+    const rowIndex = parseInt(document.getElementById('f-row').value);
+    let ok;
+    if (rowIndex) ok = await updateProduct(rowIndex, product, accessToken);
+    else ok = await appendProduct(product, accessToken);
+    if (ok) {
+      showToast(rowIndex ? tMyShop('adminToastUpdateSuccess') : tMyShop('adminToastAddSuccess'));
+      closeForm();
+      await loadProducts();
+    } else {
+      showToast(tMyShop('adminToastSaved'), true);
+    }
+  } catch (e) {
+    console.error(e);
+    showToast(tMyShop('adminToastErrorPrefix') + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = tMyShop('adminSave');
+  }
+}
+
+async function confirmDelete(rowIndex) {
+  const p = products.find(x => x.rowIndex === rowIndex);
+  if (!confirm(tMyShop('adminConfirmDelete', { name: p?.name || '' }))) return;
+  const ok = await deleteProduct(rowIndex, accessToken);
+  if (ok) { showToast(tMyShop('adminToastDeleteSuccess')); await loadProducts(); }
+  else showToast(tMyShop('adminToastDeleteFail'), true);
+}
+
+// ── TOAST ─────────────────────────────────────────
+function showToast(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 2800);
+}
+</script>
+</body>
+</html>
