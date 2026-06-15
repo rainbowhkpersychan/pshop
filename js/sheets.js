@@ -60,7 +60,7 @@ function getEffectiveWhatsApp() {
 
 function getAllowedAdmins() {
   return getStoredJson(MYSHOP_ALLOWED_ADMINS_KEY, [
-    'ianchanpong@gmail.com',
+    'ianchanpong@gmail.com','rainbowhk.persychan@gmail.com'
   ]).map(v => String(v).toLowerCase().trim()).filter(Boolean);
 }
 
