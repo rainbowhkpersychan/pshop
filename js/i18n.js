@@ -47,7 +47,7 @@ const MYSHOP_I18N = {
     adminFormAddTitle: '新增產品',
     adminFormEditTitle: '編輯產品',
     adminFieldName: '產品名稱 *',
-    adminFieldPrice: '價錢 (HK$) *',
+    adminFieldPrice: '價錢 (HK$) *最终價錢由銷售員經 Whatsapp 確定',
     adminFieldCategory: '分類',
     adminFieldStatus: '狀態',
     adminFieldDescription: '產品描述',
