@@ -15,11 +15,11 @@ const CONFIG = {
 
   // 3️⃣  Google API Key（前台用，從 Google Cloud Console 取得）
   //     步驟見 SETUP.md
-  API_KEY: 'YOUR_GOOGLE_API_KEY',
+  API_KEY: 'AIzaSyDZEjR6MZaLN7QIhvx44-G3f3l_IiaS3uE',
 
   // 4️⃣  Google OAuth Client ID（後台登入用）
   //     步驟見 SETUP.md（2c）
-  GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID',
+  GOOGLE_CLIENT_ID: '366968087168-g6687tv6mssvntd23dqcrmju3cutg026.apps.googleusercontent.com',
 
   // 5️⃣  你嘅 Google Drive 相片資料夾 ID（可選）
   //     👉 留空亦可：Admin 登入後可以一鍵建立自己嘅資料夾。
