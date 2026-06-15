@@ -5,7 +5,7 @@
 const CONFIG = {
 
   // 1️⃣  你嘅 WhatsApp 香港號碼（852 + 8位數字，唔需要 + 或空格）
-  WHATSAPP_NUMBER: '85298765432',
+  WHATSAPP_NUMBER: '85292290991',
 
   // 2️⃣  Google Sheets ID
   //     從 Sheets URL 取得：
